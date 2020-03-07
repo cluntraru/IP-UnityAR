@@ -21,6 +21,9 @@ Instructions may vary between phones, but the general idea should be the same, h
 - Open settings on your phone, then **About Phone**, and tap **Build Number** lots of times (around 8-10). You are now a developer
 - Go back to settings and int **System->Developer Options**. Scroll down and enable **USB Debugging**
 
+### Troubleshooting
+- If build succeeds but APK failed to install to device, make sure screen is on, USB Debugging is enabled and try uninstalling the old app build
+
 ### Useful Resources
 
 Vuforia SDK: https://developer.vuforia.com/downloads/sdk
