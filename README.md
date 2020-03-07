@@ -2,8 +2,9 @@
 
 ### System Requirements
 Platform: Windows
+
 Unity: 2019.3.4f1
-AR: Vuforia
+
 
 ### Installing Unity
 - Download UnityHub (first time user option)
