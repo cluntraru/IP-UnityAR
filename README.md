@@ -10,6 +10,10 @@ AR: Vuforia
 - Install Unity 2019.3.4f1 with **Android Build support** and both submenu options, **Android SDK & NDK tools** and **OpenJDK**
 - Vuforia add-on needs to be imported separately: download *Add Vuforia Engine to a Unity Project or upgrade to the latest version* and after opening the Unity project **Assets->Import Package->Custom package** select the Vuforia SDK you downloaded.
 
+### Important Notes
+- Application.PersistentDataPath is "[Internal Storage]/Android/data/com.com.ProiectIP.AR.UnityAR/files"
+- Currently to run on phone, you need to have a "sample.jpg" in phone storage at persistent data path mentioned above
+
 ### Useful Resources
 
 Vuforia SDK: https://developer.vuforia.com/downloads/sdk
