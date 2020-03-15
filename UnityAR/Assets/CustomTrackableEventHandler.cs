@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Vuforia;
 
-public class CustomTrackableEventHandler : MonoBehaviour 
+public class CustomTrackableEventHandler : MonoBehaviour
 {
     [SerializeField]
     public string mServerIp = "127.0.0.1";
@@ -22,6 +22,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
     private bool mServerFoundTrackable = false;
 
     private bool mIsVuforiaStarted = false;
+    private bool mIsFirstValidUpdate = true;
 
     public void TrackableStateChange(TrackableBehaviour.Status newStatus)
     {
@@ -77,7 +78,8 @@ public class CustomTrackableEventHandler : MonoBehaviour
 
     IEnumerator PutCameraImage()
     {
-        while (!mServerFoundTrackable)
+        //while (!mServerFoundTrackable)
+        while (true)
         {
             Vuforia.Image cameraImage = CameraDevice.Instance.GetCameraImage(mPixelFormat);
             byte[] data = cameraImage.Pixels;
@@ -94,6 +96,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
                 Debug.Log("Successfully uploaded camera image");
             }
     
+            Debug.Log("Hello");
             yield return new WaitForSeconds(.2f);
         }
     }
@@ -113,7 +116,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
 
     void Start()
     {
-       VuforiaARController.Instance.RegisterVuforiaStartedCallback(OnVuforiaStart);
+        VuforiaARController.Instance.RegisterVuforiaStartedCallback(OnVuforiaStart);
 
         for (int i = 0; i < mTextureCount; ++i)
         {
@@ -131,6 +134,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
         DataSetTrackableBehaviour tbh = dataSet.CreateTrackable(objectTracker.RuntimeImageSource, "NewTrackableObject");
         tbh.gameObject.AddComponent<DefaultTrackableEventHandler>();
         tbh.gameObject.AddComponent<TurnOffBehaviour>();
+        tbh.gameObject.AddComponent<CustomTrackableEventManager>();
 
         // Create quad to display image
         GameObject childQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -152,6 +156,15 @@ public class CustomTrackableEventHandler : MonoBehaviour
         if (!mIsVuforiaStarted)
         {
             return;
+        }
+
+        // Executes once - at the beginning of runtime, server needs to be sent image
+        if (mIsFirstValidUpdate)
+        {
+            mServerFoundTrackable = false;
+            StartCoroutine(PutCameraImage());
+
+            mIsFirstValidUpdate = false;
         }
 
         for (int i = 0; i < mTextureCount - 1; i += 2)
