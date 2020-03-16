@@ -78,12 +78,22 @@ public class CustomTrackableEventHandler : MonoBehaviour
 
     IEnumerator PutCameraImage()
     {
-        //while (!mServerFoundTrackable)
-        while (true)
+        while (!mServerFoundTrackable)
         {
-            Vuforia.Image cameraImage = CameraDevice.Instance.GetCameraImage(mPixelFormat);
+            bool isCameraImageValid = false;
+            Vuforia.Image cameraImage = null;
+            while (!isCameraImageValid)
+            {
+                cameraImage = CameraDevice.Instance.GetCameraImage(mPixelFormat);
+                isCameraImageValid = cameraImage.Width > 0 && cameraImage.Height > 0;
+
+                if (!isCameraImageValid)
+                {
+                    yield return new WaitForSeconds(.2f);
+                }
+            }
+            
             byte[] data = cameraImage.Pixels;
-    
             string url = "http://" + mServerIp + ":" + mServerPort + "/app/put";
             UnityWebRequest www = UnityWebRequest.Put(url, data);
             yield return www.SendWebRequest();
@@ -95,9 +105,6 @@ public class CustomTrackableEventHandler : MonoBehaviour
             {
                 Debug.Log("Successfully uploaded camera image");
             }
-    
-            Debug.Log("Hello");
-            yield return new WaitForSeconds(.2f);
         }
     }
 
