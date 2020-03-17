@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -17,6 +18,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
     private Texture2D[] mTextures = new Texture2D[mTextureCount];
     private bool[] mPollResults = new bool[mTextureCount];
     private bool[] mIsTextureDownloaded = new bool[mTextureCount];
+    private string[] textureIds = new string[mTextureCount] { "1", "2" };
 
     private PIXEL_FORMAT mPixelFormat;
     private bool mServerFoundTrackable = false;
@@ -37,7 +39,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
     {
         while (true)
         {
-            int serverTextureId = textureIdx + 1;
+            string serverTextureId = textureIds[textureIdx];
             string url = "http://" + mServerIp + ":" + mServerPort + "/app/poll/" + serverTextureId;
             UnityWebRequest www = UnityWebRequest.Get(url);
             yield return www.SendWebRequest();
@@ -45,20 +47,21 @@ public class CustomTrackableEventHandler : MonoBehaviour
             if (www.isNetworkError)
             {
                 Debug.LogError("Failed to poll for texture change");
-            } else
+            }
+            else
             {
                 string downloadText = www.downloadHandler.text;
                 mPollResults[textureIdx] = (downloadText == "1");
             }
 
-            yield return new WaitForSeconds(.2f);
+            yield return new WaitForSeconds(1.2f);
         }
     }
 
     IEnumerator GetTexture(int textureIdx)
     {
         mIsTextureDownloaded[textureIdx] = false;
-        int serverTextureId = textureIdx + 1;
+        string serverTextureId = textureIds[textureIdx];
         string url = "http://" + mServerIp + ":" + mServerPort + "/app/get/" + serverTextureId;
         UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
         yield return www.SendWebRequest();
@@ -66,11 +69,12 @@ public class CustomTrackableEventHandler : MonoBehaviour
         if (www.isNetworkError || www.isHttpError)
         {
             Debug.LogError("Failed to retrieve trackable texture from server");
-        } else
+        }
+        else
         {
-           mTextures[textureIdx] = ((DownloadHandlerTexture) www.downloadHandler).texture;
+            mTextures[textureIdx] = ((DownloadHandlerTexture)www.downloadHandler).texture;
             // Debug
-           File.WriteAllBytes(Application.persistentDataPath + "/test.jpg", mTextures[textureIdx].EncodeToJPG());
+            File.WriteAllBytes(Application.persistentDataPath + "/test.jpg", mTextures[textureIdx].EncodeToJPG());
         }
 
         mIsTextureDownloaded[textureIdx] = true;
@@ -92,19 +96,24 @@ public class CustomTrackableEventHandler : MonoBehaviour
                     yield return new WaitForSeconds(.2f);
                 }
             }
-            
-            byte[] data = cameraImage.Pixels;
+            Texture2D cameraTexture = new Texture2D(cameraImage.Width, cameraImage.Height);
+            cameraImage.CopyToTexture(cameraTexture, false);
+            byte[] data = cameraTexture.EncodeToJPG();
             string url = "http://" + mServerIp + ":" + mServerPort + "/app/put";
             UnityWebRequest www = UnityWebRequest.Put(url, data);
             yield return www.SendWebRequest();
-    
+
             if (www.isNetworkError)
             {
                 Debug.LogError("Failed to upload camera image");
-            } else
+            }
+            else
             {
                 Debug.Log("Successfully uploaded camera image");
+
             }
+            yield return new WaitForSeconds(1.2f);
+
         }
     }
 
@@ -176,7 +185,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
 
         for (int i = 0; i < mTextureCount - 1; i += 2)
         {
-            if (mPollResults[i] && mPollResults[i + 1])
+            if (mPollResults[i] || mPollResults[i + 1]) //if either the object tracked or the overlay are changed, there should be made an update
             {
                 mServerFoundTrackable = true;
                 mPollResults[i] = false;
