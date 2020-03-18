@@ -26,14 +26,6 @@ public class CustomTrackableEventHandler : MonoBehaviour
     private bool mIsVuforiaStarted = false;
     private bool mIsFirstValidUpdate = true;
 
-    public void TrackableStateChange(TrackableBehaviour.Status newStatus)
-    {
-        if (newStatus.Equals(TrackableBehaviour.Status.NO_POSE))
-        {
-            mServerFoundTrackable = false;
-            StartCoroutine(PutCameraImage());
-        }
-    }
 
     IEnumerator GetIsTextureChanged(int textureIdx)
     {
@@ -112,7 +104,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
                 Debug.Log("Successfully uploaded camera image");
 
             }
-            yield return new WaitForSeconds(1.2f);
+            yield return new WaitForSeconds(1.0f);
 
         }
     }
@@ -150,8 +142,18 @@ public class CustomTrackableEventHandler : MonoBehaviour
         DataSetTrackableBehaviour tbh = dataSet.CreateTrackable(objectTracker.RuntimeImageSource, "NewTrackableObject");
         tbh.gameObject.AddComponent<DefaultTrackableEventHandler>();
         tbh.gameObject.AddComponent<TurnOffBehaviour>();
-        tbh.gameObject.AddComponent<CustomTrackableEventManager>();
-
+        tbh.RegisterOnTrackableStatusChanged(statusChange =>
+        {
+            if (statusChange.NewStatus.Equals(TrackableBehaviour.Status.NO_POSE))
+            {
+                mServerFoundTrackable = false;
+                StartCoroutine(PutCameraImage());
+            }
+            else if (statusChange.NewStatus.Equals(TrackableBehaviour.Status.TRACKED))
+            {
+                mServerFoundTrackable = true;
+            }
+        });
         // Create quad to display image
         GameObject childQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
 
@@ -185,7 +187,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
 
         for (int i = 0; i < mTextureCount - 1; i += 2)
         {
-            if (mPollResults[i] || mPollResults[i + 1]) //if either the object tracked or the overlay are changed, there should be made an update
+            if (mPollResults[i] && mPollResults[i + 1])
             {
                 mServerFoundTrackable = true;
                 mPollResults[i] = false;
