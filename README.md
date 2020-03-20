@@ -24,6 +24,10 @@ Instructions may vary between phones, but the general idea should be the same, h
 ### Troubleshooting
 - If build succeeds but APK failed to install to device, make sure screen is on, USB Debugging is enabled and try uninstalling the old app build
 
+### Important Notes
+- Application.PersistentDataPath is "[Internal Storage]/Android/data/com.com.ProiectIP.AR.UnityAR/files"
+- Currently to run on phone, you need to have a "sample.jpg" in phone storage at persistent data path mentioned above
+
 ### Useful Resources
 
 Vuforia SDK: https://developer.vuforia.com/downloads/sdk
