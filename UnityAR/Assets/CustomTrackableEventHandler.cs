@@ -46,7 +46,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
                 mPollResults[textureIdx] = (downloadText == "1");
             }
 
-            yield return new WaitForSeconds(1.2f);
+            yield return new WaitForSeconds(0.2f);
         }
     }
 
@@ -104,7 +104,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
                 Debug.Log("Successfully uploaded camera image");
 
             }
-            yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(0.2f);
 
         }
     }
