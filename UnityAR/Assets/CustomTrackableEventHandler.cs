@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 using Vuforia;
+using Assets.Utils;
 
 public class CustomTrackableEventHandler : MonoBehaviour
 {
@@ -90,7 +91,14 @@ public class CustomTrackableEventHandler : MonoBehaviour
             }
             Texture2D cameraTexture = new Texture2D(cameraImage.Width, cameraImage.Height);
             cameraImage.CopyToTexture(cameraTexture, false);
-            byte[] data = cameraTexture.EncodeToJPG();
+
+#if UNITY_EDITOR
+            cameraTexture.Point(cameraTexture.width / 3 < 1440 ? cameraTexture.width/3 : 1440, cameraTexture.height / 3 < 1080 ? cameraTexture.height/3 : 1080);
+#else
+            cameraTexture.Point(cameraTexture.width /2, cameraTexture.height / 2);
+            cameraTexture.RotateTexture(true);
+#endif
+            byte[] data = cameraTexture.EncodeToPNG();
             string url = "http://" + mServerIp + ":" + mServerPort + "/app/put";
             UnityWebRequest www = UnityWebRequest.Put(url, data);
             yield return www.SendWebRequest();
@@ -162,7 +170,7 @@ public class CustomTrackableEventHandler : MonoBehaviour
         meshRenderer.sharedMaterial.SetTexture("_MainTex", overlayTexture);
 
         childQuad.transform.parent = tbh.gameObject.transform;
-        childQuad.transform.localScale = new Vector3(1f, 0.5f, 1f);
+        childQuad.transform.localScale = new Vector3(overlayTexture.width/(float)overlayTexture.height, 1f, 1f);
         childQuad.transform.Rotate(new Vector3(90f, 0f, 0f));
         // End quad
 
